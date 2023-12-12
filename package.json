@@ -1,0 +1,13 @@
+{
+  "name": "flutter-callkit-incoming",
+  "version": "1.0.0",
+  "description": "A Cordova plugin to show incoming call in your Cordova app(Custom for Android/Callkit for iOS).",
+  "cordova": {
+    "id": "flutter-callkit-incoming",
+    "platforms": [
+      "ios",
+      "android"
+    ]
+  },
+  "license": "MIT"
+}

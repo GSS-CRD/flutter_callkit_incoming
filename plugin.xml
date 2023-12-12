@@ -1,0 +1,175 @@
+<?xml version='1.0' encoding='utf-8'?>
+<plugin id="flutter-callkit-incoming" version="1.0.0" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+    <name>Flutter Callkit Incoming for Cordova</name>
+
+    <js-module name="FlutterCallkitIncoming" src="cordova/www/FlutterCallkitIncoming.js">
+        <clobbers target="cordova.plugins.FlutterCallkitIncoming" />
+    </js-module>
+
+    <platform name="android">
+        <!-- <config-file target="config.xml" parent="/*">
+            <preference name="AndroidXEnabled" value="true" />
+            <preference name="GradlePluginKotlinEnabled" value="true" />
+            <preference name="GradlePluginKotlinVersion" value="1.8.0" />
+        </config-file> -->
+
+        <config-file parent="/*" target="res/xml/config.xml">
+            <feature name="CordovaCallkitIncomingPlugin">
+                <param name="android-package" value="com.hiennv.flutter_callkit_incoming.CordovaCallkitIncomingPlugin" />
+                <param name="onload" value="true" />
+            </feature>
+        </config-file>
+
+        <config-file parent="/*" target="AndroidManifest.xml">
+            <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
+            <uses-permission android:name="android.permission.INTERNET" />
+            <uses-permission android:name="android.permission.VIBRATE" />
+            <uses-permission android:name="android.permission.WAKE_LOCK" />
+            <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
+            <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+        </config-file>
+
+        <config-file parent="/manifest/application" target="AndroidManifest.xml">
+            <activity
+                android:name="com.hiennv.flutter_callkit_incoming.CallkitIncomingActivity"
+                android:taskAffinity="com.hiennv.flutter_callkit_incoming.INCOMING_CALL_AFFINITY"
+                android:excludeFromRecents="true"
+                android:noHistory="true"
+                android:showOnLockScreen="true"
+                android:turnScreenOn="true"
+                android:configChanges="orientation"
+                android:exported="true"
+                android:theme="@style/CallkitIncomingTheme">
+                <intent-filter>
+                    <action android:name="${applicationId}.com.hiennv.flutter_callkit_incoming.ACTION_CALL_INCOMING" />
+                    <category android:name="android.intent.category.DEFAULT" />
+                </intent-filter>
+            </activity>
+            <activity
+                android:exported="false"
+                android:theme="@style/TranslucentTheme"
+                android:name="com.hiennv.flutter_callkit_incoming.TransparentActivity"/>
+
+            <receiver
+                android:name="com.hiennv.flutter_callkit_incoming.CallkitIncomingBroadcastReceiver"
+                android:enabled="true"
+                android:exported="true">
+                <intent-filter>
+                    <action android:name="${applicationId}.com.hiennv.flutter_callkit_incoming.ACTION_CALL_INCOMING" />
+                    <action android:name="${applicationId}.com.hiennv.flutter_callkit_incoming.ACTION_CALL_ACCEPT" />
+                    <action android:name="${applicationId}.com.hiennv.flutter_callkit_incoming.ACTION_CALL_DECLINE" />
+                    <action android:name="${applicationId}.com.hiennv.flutter_callkit_incoming.ACTION_CALL_ENDED" />
+                    <action android:name="${applicationId}.com.hiennv.flutter_callkit_incoming.ACTION_CALL_TIMEOUT" />
+                </intent-filter>
+            </receiver>
+
+            <service
+                android:enabled="true"
+                android:exported="true"
+                android:name="com.hiennv.flutter_callkit_incoming.CallkitSoundPlayerService"/>
+        </config-file>
+
+        <source-file src="cordova/android/CordovaCallkitIncomingPlugin.kt" target-dir="src/main/kotlin/com/hiennv/flutter_callkit_incoming" />
+        <source-file src="cordova/android/AppUtils.kt" target-dir="src/main/kotlin/com/hiennv/flutter_callkit_incoming" />
+        <framework src="cordova/android/build.gradle" custom="true" type="gradleReference"/>
+        <resource-file src="android/consumer-rules.pro" target="/flutter-callkit-incoming/consumer-rules.pro" />
+        <!-- flutter callkit incoming kotlin -->
+        <source-file src="android/src/main/kotlin/com/hiennv/flutter_callkit_incoming/Call.kt" target-dir="src/main/kotlin/com/hiennv/flutter_callkit_incoming" />
+        <source-file src="android/src/main/kotlin/com/hiennv/flutter_callkit_incoming/CallkitConstants.kt" target-dir="src/main/kotlin/com/hiennv/flutter_callkit_incoming" />
+        <source-file src="android/src/main/kotlin/com/hiennv/flutter_callkit_incoming/CallkitIncomingActivity.kt" target-dir="src/main/kotlin/com/hiennv/flutter_callkit_incoming" />
+        <source-file src="android/src/main/kotlin/com/hiennv/flutter_callkit_incoming/CallkitIncomingBroadcastReceiver.kt" target-dir="src/main/kotlin/com/hiennv/flutter_callkit_incoming" />
+        <source-file src="android/src/main/kotlin/com/hiennv/flutter_callkit_incoming/CallkitNotificationManager.kt" target-dir="src/main/kotlin/com/hiennv/flutter_callkit_incoming" />
+        <source-file src="android/src/main/kotlin/com/hiennv/flutter_callkit_incoming/CallkitSoundPlayerService.kt" target-dir="src/main/kotlin/com/hiennv/flutter_callkit_incoming" />
+        <source-file src="android/src/main/kotlin/com/hiennv/flutter_callkit_incoming/SharedPreferencesUtils.kt" target-dir="src/main/kotlin/com/hiennv/flutter_callkit_incoming" />
+        <source-file src="android/src/main/kotlin/com/hiennv/flutter_callkit_incoming/TransparentActivity.kt" target-dir="src/main/kotlin/com/hiennv/flutter_callkit_incoming" />
+        <source-file src="android/src/main/kotlin/com/hiennv/flutter_callkit_incoming/Utils.kt" target-dir="src/main/kotlin/com/hiennv/flutter_callkit_incoming" />
+        <source-file src="android/src/main/kotlin/com/hiennv/flutter_callkit_incoming/widgets/CircleTransform.kt" target-dir="src/main/kotlin/com/hiennv/flutter_callkit_incoming/widgets" />
+        <source-file src="android/src/main/kotlin/com/hiennv/flutter_callkit_incoming/widgets/RippleRelativeLayout.kt" target-dir="src/main/kotlin/com/hiennv/flutter_callkit_incoming/widgets" />
+        <!-- res/anim -->
+        <resource-file src="android/src/main/res/anim/shake_anim.xml" target="res/anim/shake_anim.xml" />
+        <!-- res/drawable -->
+        <resource-file src="android/src/main/res/drawable/bg_button_accept.xml" target="res/drawable/bg_button_accept.xml" />
+        <resource-file src="android/src/main/res/drawable/bg_button_decline.xml" target="res/drawable/bg_button_decline.xml" />
+        <resource-file src="android/src/main/res/drawable/rounded_button_accept.xml" target="res/drawable/rounded_button_accept.xml" />
+        <resource-file src="android/src/main/res/drawable/rounded_button_decline.xml" target="res/drawable/rounded_button_decline.xml" />
+        <resource-file src="android/src/main/res/drawable/transparent.png" target="res/drawable/transparent.png" />
+        <!-- res/drawable-hdpi -->
+        <resource-file src="android/src/main/res/drawable-hdpi/ic_accept.png" target="res/drawable-hdpi/ic_accept.png" />
+        <resource-file src="android/src/main/res/drawable-hdpi/ic_call_missed.png" target="res/drawable-hdpi/ic_call_missed.png" />
+        <resource-file src="android/src/main/res/drawable-hdpi/ic_decline.png" target="res/drawable-hdpi/ic_decline.png" />
+        <resource-file src="android/src/main/res/drawable-hdpi/ic_video_missed.png" target="res/drawable-hdpi/ic_video_missed.png" />
+        <resource-file src="android/src/main/res/drawable-hdpi/ic_video.png" target="res/drawable-hdpi/ic_video.png" />
+        <!-- res/drawable-mdpi -->
+        <resource-file src="android/src/main/res/drawable-mdpi/ic_accept.png" target="res/drawable-mdpi/ic_accept.png" />
+        <resource-file src="android/src/main/res/drawable-mdpi/ic_call_missed.png" target="res/drawable-mdpi/ic_call_missed.png" />
+        <resource-file src="android/src/main/res/drawable-mdpi/ic_decline.png" target="res/drawable-mdpi/ic_decline.png" />
+        <resource-file src="android/src/main/res/drawable-mdpi/ic_video_missed.png" target="res/drawable-mdpi/ic_video_missed.png" />
+        <resource-file src="android/src/main/res/drawable-mdpi/ic_video.png" target="res/drawable-mdpi/ic_video.png" />
+        <!-- res/drawable-v21 -->
+        <resource-file src="android/src/main/res/drawable-v21/bg_button_accept.xml" target="res/drawable-v21/bg_button_accept.xml" />
+        <resource-file src="android/src/main/res/drawable-v21/bg_button_decline.xml" target="res/drawable-v21/bg_button_decline.xml" />
+        <resource-file src="android/src/main/res/drawable-v21/rounded_button_accept.xml" target="res/drawable-v21/rounded_button_accept.xml" />
+        <resource-file src="android/src/main/res/drawable-v21/rounded_button_decline.xml" target="res/drawable-v21/rounded_button_decline.xml" />
+        <!-- res/drawable-xhdpi -->
+        <resource-file src="android/src/main/res/drawable-xhdpi/ic_accept.png" target="res/drawable-xhdpi/ic_accept.png" />
+        <resource-file src="android/src/main/res/drawable-xhdpi/ic_call_missed.png" target="res/drawable-xhdpi/ic_call_missed.png" />
+        <resource-file src="android/src/main/res/drawable-xhdpi/ic_decline.png" target="res/drawable-xhdpi/ic_decline.png" />
+        <resource-file src="android/src/main/res/drawable-xhdpi/ic_video_missed.png" target="res/drawable-xhdpi/ic_video_missed.png" />
+        <resource-file src="android/src/main/res/drawable-xhdpi/ic_video.png" target="res/drawable-xhdpi/ic_video.png" />
+        <!-- res/drawable-xxhdpi -->
+        <resource-file src="android/src/main/res/drawable-xxhdpi/ic_accept.png" target="res/drawable-xxhdpi/ic_accept.png" />
+        <resource-file src="android/src/main/res/drawable-xxhdpi/ic_call_missed.png" target="res/drawable-xxhdpi/ic_call_missed.png" />
+        <resource-file src="android/src/main/res/drawable-xxhdpi/ic_decline.png" target="res/drawable-xxhdpi/ic_decline.png" />
+        <resource-file src="android/src/main/res/drawable-xxhdpi/ic_video_missed.png" target="res/drawable-xxhdpi/ic_video_missed.png" />
+        <resource-file src="android/src/main/res/drawable-xxhdpi/ic_video.png" target="res/drawable-xxhdpi/ic_video.png" />
+        <!-- res/drawable-xxxhdpi -->
+        <resource-file src="android/src/main/res/drawable-xxxhdpi/ic_accept.png" target="res/drawable-xxxhdpi/ic_accept.png" />
+        <resource-file src="android/src/main/res/drawable-xxxhdpi/ic_call_missed.png" target="res/drawable-xxxhdpi/ic_call_missed.png" />
+        <resource-file src="android/src/main/res/drawable-xxxhdpi/ic_decline.png" target="res/drawable-xxxhdpi/ic_decline.png" />
+        <resource-file src="android/src/main/res/drawable-xxxhdpi/ic_video_missed.png" target="res/drawable-xxxhdpi/ic_video_missed.png" />
+        <resource-file src="android/src/main/res/drawable-xxxhdpi/ic_video.png" target="res/drawable-xxxhdpi/ic_video.png" />
+        <!-- res/layout -->
+        <resource-file src="android/src/main/res/layout/activity_callkit_incoming.xml" target="res/layout/activity_callkit_incoming.xml" />
+        <resource-file src="android/src/main/res/layout/layout_custom_miss_notification.xml" target="res/layout/layout_custom_miss_notification.xml" />
+        <resource-file src="android/src/main/res/layout/layout_custom_notification.xml" target="res/layout/layout_custom_notification.xml" />
+        <resource-file src="android/src/main/res/layout/layout_custom_small_ex_notification.xml" target="res/layout/layout_custom_small_ex_notification.xml" />
+        <resource-file src="android/src/main/res/layout/layout_custom_small_notification.xml" target="res/layout/layout_custom_small_notification.xml" />
+        <!-- res/layout-w600dp-land -->
+        <resource-file src="android/src/main/res/layout-w600dp-land/activity_callkit_incoming.xml" target="res/layout-w600dp-land/activity_callkit_incoming.xml" />
+        <!-- res/raw -->
+        <resource-file src="android/src/main/res/raw/ringtone_default.mp3" target="res/raw/ringtone_default.mp3" />
+        <!-- res/values -->
+        <resource-file src="android/src/main/res/values/attrs.xml" target="res/values/attrs.xml" />
+        <resource-file src="android/src/main/res/values/colors.xml" target="res/values/colors.xml" />
+        <resource-file src="android/src/main/res/values/dimens.xml" target="res/values/dimens.xml" />
+        <resource-file src="android/src/main/res/values/strings.xml" target="res/values/strings.xml" />
+        <resource-file src="android/src/main/res/values/styles.xml" target="res/values/styles.xml" />
+        <!-- res/values-sw600dp -->
+        <resource-file src="android/src/main/res/values-sw600dp/dimens.xml" target="res/values-sw600dp/dimens.xml" />
+  </platform>
+
+  <!-- <platform name="ios">
+      <config-file target="config.xml" parent="/*">
+          <feature name="CordovaCall">
+              <param name="ios-package" value="CordovaCall" />
+              <param name="onload" value="true" />
+          </feature>
+      </config-file>
+
+      <config-file target="*-Info.plist" parent="UIBackgroundModes">
+          <array>
+              <string>fetch</string>
+              <string>remote-notification</string>
+              <string>voip</string>
+          </array>
+      </config-file>
+
+      <header-file src="src/ios/CordovaCall.h" />
+
+      <source-file src="src/ios/CordovaCall.m" />
+      <source-file src="src/ios/AppDelegateCordovaCall.m" />
+
+      <framework src="PushKit.framework" />
+      <framework src="CallKit.framework" />
+  </platform> -->
+</plugin>
