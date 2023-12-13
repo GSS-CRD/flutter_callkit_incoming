@@ -180,6 +180,8 @@
                 <param name="ios-package" value="CordovaCallkitIncomingPlugin"/>
                 <param name="onload" value="true" />
             </feature>
+
+            <preference name="SwiftVersion" value="4.2" />
         </config-file>
 
         <config-file target="*-Info.plist" parent="UIBackgroundModes">
@@ -196,10 +198,6 @@
         <source-file src="ios/Classes/NSUserActivity.swift" />
         <source-file src="ios/Classes/StringUtils.swift" />
         <source-file src="ios/Classes/WeakArray.swift" />
-
-        <config-file target="config.xml" parent="/*">
-            <preference name="SwiftVersion" value="4.2" />
-        </config-file>
 
         <podspec>
             <config>
