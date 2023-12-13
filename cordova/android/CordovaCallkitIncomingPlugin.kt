@@ -6,6 +6,7 @@ import android.util.Log
 import org.apache.cordova.*
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.Collections
 
 class CordovaCallkitIncomingPlugin : CordovaPlugin() {
     companion object {
@@ -13,6 +14,26 @@ class CordovaCallkitIncomingPlugin : CordovaPlugin() {
         private const val TAG: String = "$PREFIX_TAG (CordovaCallkitIncomingPlugin)"
 
         const val EXTRA_CALLKIT_CALL_DATA = "EXTRA_CALLKIT_CALL_DATA"
+
+        private var cdvCallbackContext: CallbackContext? = null
+        private val cachedEvents = Collections.synchronizedList(ArrayList<JSONObject>())
+
+        fun sendEvent(eventName: String, data: Map<*, *>? = null) {
+            val event = JSONObject()
+            event.put("eventName", eventName.removePrefix("com.hiennv.flutter_callkit_incoming."))
+            event.put("data", JSONObject(data.orEmpty()))
+
+            if (isActive) {
+                val pluginResult = PluginResult(PluginResult.Status.OK, event)
+                pluginResult.keepCallback = true
+                cdvCallbackContext?.sendPluginResult(pluginResult)
+            } else {
+                cachedEvents.add(event)
+            }
+        }
+
+        val isActive: Boolean
+            get() = cdvCallbackContext != null
     }
 
 
@@ -20,73 +41,52 @@ class CordovaCallkitIncomingPlugin : CordovaPlugin() {
     private val context: Context get() = activity?.applicationContext!!
     private val callkitNotificationManager: CallkitNotificationManager get() = CallkitNotificationManager(context)
 
-//    public fun showIncomingNotification(data: Data) {
-//        data.from = "notification"
-//        callkitNotificationManager?.showIncomingNotification(data.toBundle())
-//        //send BroadcastReceiver
-//        context?.sendBroadcast(
-//            CallkitIncomingBroadcastReceiver.getIntentIncoming(
-//                requireNotNull(context),
-//                data.toBundle()
-//            )
-//        )
-//    }
-//
-//    public fun showMissCallNotification(data: Data) {
-//        callkitNotificationManager?.showIncomingNotification(data.toBundle())
-//    }
-//
-//    public fun startCall(data: Data) {
-//        context?.sendBroadcast(
-//            CallkitIncomingBroadcastReceiver.getIntentStart(
-//                requireNotNull(context),
-//                data.toBundle()
-//            )
-//        )
-//    }
-//
-//    public fun endCall(data: Data) {
-//        context?.sendBroadcast(
-//            CallkitIncomingBroadcastReceiver.getIntentEnded(
-//                requireNotNull(context),
-//                data.toBundle()
-//            )
-//        )
-//    }
-//
-//    public fun endAllCalls() {
-//        val calls = getDataActiveCalls(context)
-//        calls.forEach {
-//            context?.sendBroadcast(
-//                CallkitIncomingBroadcastReceiver.getIntentEnded(
-//                    requireNotNull(context),
-//                    it.toBundle()
-//                )
-//            )
-//        }
-//        removeAllCalls(context)
-//    }
+    public fun showIncomingNotification(data: Data) {
+        data.from = "notification"
+        context?.sendBroadcast(
+            CallkitIncomingBroadcastReceiver.getIntentIncoming(
+                requireNotNull(context),
+                data.toBundle()
+            )
+        )
+    }
 
-    /**
-     * Performs various push plugin related tasks:
-     *
-     *  - Initialize
-     *  - Unregister
-     *  - Has Notification Permission Check
-     *  - Set Icon Badge Number
-     *  - Get Icon Badge Number
-     *  - Clear All Notifications
-     *  - Clear Notification
-     *  - Subscribe
-     *  - Unsubscribe
-     *  - Create Channel
-     *  - Delete Channel
-     *  - List Channels
-     *
-     *  @param action
-     *  @param data
-     *  @param callbackContext
-     */
+    public fun showMissCallNotification(data: Data) {
+        data.from = "notification"
+        callkitNotificationManager?.showIncomingNotification(data.toBundle())
+    }
+
+    public fun startCall(data: Data) {
+        context?.sendBroadcast(
+            CallkitIncomingBroadcastReceiver.getIntentStart(
+                requireNotNull(context),
+                data.toBundle()
+            )
+        )
+    }
+
+    public fun endCall(data: Data) {
+        context?.sendBroadcast(
+            CallkitIncomingBroadcastReceiver.getIntentEnded(
+                requireNotNull(context),
+                data.toBundle()
+            )
+        )
+    }
+
+    public fun endAllCalls() {
+        val calls = getDataActiveCalls(context)
+        calls.forEach {
+            context?.sendBroadcast(
+                CallkitIncomingBroadcastReceiver.getIntentEnded(
+                    requireNotNull(context),
+                    it.toBundle()
+                )
+            )
+        }
+        removeAllCalls(context)
+    }
+
     override fun execute(
         action: String,
         data: JSONArray,
@@ -95,6 +95,18 @@ class CordovaCallkitIncomingPlugin : CordovaPlugin() {
         Log.v("TAG", "Execute: Action = $action")
 
         when (action) {
+            "on" -> {
+                cdvCallbackContext = callbackContext
+
+                if (cachedEvents.isNotEmpty()) {
+                    for (event in cachedEvents) {
+                        val pluginResult = PluginResult(PluginResult.Status.OK, event)
+                        pluginResult.keepCallback = true
+                        cdvCallbackContext?.sendPluginResult(pluginResult)
+                    }
+                    cachedEvents.clear()
+                }
+            }
             "showCallkitIncoming" -> {
                 data.getJSONObject(0)?.let {
                     val data = Data(toMap(it))
@@ -130,13 +142,13 @@ class CordovaCallkitIncomingPlugin : CordovaPlugin() {
                 callbackContext.success()
             }
             "muteCall" -> {
-                callbackContext.success()
+                callbackContext.success("not implemented on Android")
             }
             "holdCall" -> {
-                callbackContext.success()
+                callbackContext.success("not implemented on Android")
             }
             "isMuted" -> {
-                callbackContext.success("false")
+                callbackContext.success("not implemented on Android")
             }
             "endCall" -> {
                 data.getJSONObject(0)?.let {
@@ -147,10 +159,10 @@ class CordovaCallkitIncomingPlugin : CordovaPlugin() {
                         )
                     )
                 }
-                callbackContext.success("OK")
+                callbackContext.success()
             }
             "callConnected" -> {
-                callbackContext.success("OK")
+                callbackContext.success("not implemented on Android")
             }
             "endAllCalls" -> {
                 val calls = getDataActiveCalls(context)
@@ -172,13 +184,13 @@ class CordovaCallkitIncomingPlugin : CordovaPlugin() {
                     }
                 }
                 removeAllCalls(context)
-                callbackContext.success("OK")
+                callbackContext.success()
             }
             "activeCalls" -> {
                 callbackContext.success(JSONArray(getDataActiveCallsForFlutter(context)))
             }
             "getDevicePushTokenVoIP" -> {
-                callbackContext.success("")
+                callbackContext.success("not implemented on Android")
             }
             "requestNotificationPermission" -> {
                 data.getJSONObject(0)?.let {
@@ -197,6 +209,11 @@ class CordovaCallkitIncomingPlugin : CordovaPlugin() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         callkitNotificationManager.onRequestPermissionsResult(activity, requestCode, grantResults)
+    }
+
+    override fun onDestroy() {
+        cdvCallbackContext = null
+        super.onDestroy()
     }
 
     private fun toMap(jsonObject: JSONObject): Map<String, Any> {

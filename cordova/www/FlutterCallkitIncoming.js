@@ -1,96 +1,83 @@
 var exec = require('cordova/exec');
 
-exports.setAppName = function(appName, success, error) {
-    exec(success, error, "CordovaCall", "setAppName", [appName]);
-};
+exports.on = (callback) => {
+  exec((results) => {
+    const { eventName, data } = results;
+    callback(eventName, data);
+  }, () => {
+    new Error('CordovaCallkitIncomingPlugin on error');
+  }, "CordovaCallkitIncomingPlugin", "on", []);
+}
 
-exports.setIcon = function(iconName, success, error) {
-    exec(success, error, "CordovaCall", "setIcon", [iconName]);
-};
+exports.showCallkitIncoming = async (params) => {
+  return new Promise((resolve, reject) => {
+    exec(resolve, reject, "CordovaCallkitIncomingPlugin", "showCallkitIncoming", [params]);
+  });
+}
 
-exports.setRingtone = function(ringtoneName, success, error) {
-    exec(success, error, "CordovaCall", "setRingtone", [ringtoneName]);
-};
+exports.showMissCallNotification = async (params) => {
+  return new Promise((resolve, reject) => {
+    exec(resolve, reject, "CordovaCallkitIncomingPlugin", "showMissCallNotification", [params]);
+  });
+}
 
-exports.setIncludeInRecents = function(value, success, error) {
-    if(typeof value == "boolean") {
-      exec(success, error, "CordovaCall", "setIncludeInRecents", [value]);
-    } else {
-      error("Value Must Be True Or False");
-    }
-};
+exports.startCall = async (params) => {
+  return new Promise((resolve, reject) => {
+    exec(resolve, reject, "CordovaCallkitIncomingPlugin", "startCall", [params]);
+  });
+}
 
-exports.setDTMFState = function(value, success, error) {
-    if(typeof value == "boolean") {
-      exec(success, error, "CordovaCall", "setDTMFState", [value]);
-    } else {
-      error("Value Must Be True Or False");
-    }
-};
+exports.muteCall = async (params) => {
+  return new Promise((resolve, reject) => {
+    exec(resolve, reject, "CordovaCallkitIncomingPlugin", "muteCall", [params]);
+  });
+}
 
-exports.setVideo = function(value, success, error) {
-    if(typeof value == "boolean") {
-      exec(success, error, "CordovaCall", "setVideo", [value]);
-    } else {
-      error("Value Must Be True Or False");
-    }
-};
+exports.holdCall = async (params) => {
+  return new Promise((resolve, reject) => {
+    exec(resolve, reject, "CordovaCallkitIncomingPlugin", "holdCall", [params]);
+  });
+}
 
-exports.receiveCall = function(from, id, success, error) {
-    if(typeof id == "function") {
-      error = success;
-      success = id;
-      id = undefined;
-    } else if(id) {
-      id = id.toString();
-    }
-    exec(success, error, "CordovaCall", "receiveCall", [from, id]);
-};
+exports.isMuted = async (params) => {
+  return new Promise((resolve, reject) => {
+    exec(resolve, reject, "CordovaCallkitIncomingPlugin", "isMuted", [params]);
+  });
+}
 
-exports.sendCall = function(to, id, success, error) {
-    if(typeof id == "function") {
-      error = success;
-      success = id;
-      id = undefined;
-    } else if(id) {
-      id = id.toString();
-    }
-    exec(success, error, "CordovaCall", "sendCall", [to, id]);
-};
+exports.endCall = async (params) => {
+  return new Promise((resolve, reject) => {
+    exec(resolve, reject, "CordovaCallkitIncomingPlugin", "endCall", [params]);
+  });
+}
 
-exports.connectCall = function(success, error) {
-    exec(success, error, "CordovaCall", "connectCall", []);
-};
+exports.callConnected = async (params) => {
+  return new Promise((resolve, reject) => {
+    exec(resolve, reject, "CordovaCallkitIncomingPlugin", "callConnected", [params]);
+  });
+}
 
-exports.endCall = function(success, error) {
-    exec(success, error, "CordovaCall", "endCall", []);
-};
+exports.endAllCalls = async () => {
+  return new Promise((resolve, reject) => {
+    exec(resolve, reject, "CordovaCallkitIncomingPlugin", "endAllCalls", []);
+  });
+}
 
-exports.mute = function(success, error) {
-    exec(success, error, "CordovaCall", "mute", []);
-};
+exports.activeCalls = async () => {
+  return new Promise((resolve, reject) => {
+    exec(resolve, reject, "CordovaCallkitIncomingPlugin", "activeCalls", []);
+  });
+}
 
-exports.unmute = function(success, error) {
-    exec(success, error, "CordovaCall", "unmute", []);
-};
+exports.getDevicePushTokenVoip = async () => {
+  return new Promise((resolve, reject) => {
+    exec(resolve, reject, "CordovaCallkitIncomingPlugin", "getDevicePushTokenVoip", []);
+  });
+}
 
-exports.speakerOn = function(success, error) {
-    exec(success, error, "CordovaCall", "speakerOn", []);
-};
+exports.requestNotificationPermission = async () => {
+  return new Promise((resolve, reject) => {
+    exec(resolve, reject, "CordovaCallkitIncomingPlugin", "requestNotificationPermission", []);
+  });
+}
 
-exports.speakerOff = function(success, error) {
-    exec(success, error, "CordovaCall", "speakerOff", []);
-};
-
-exports.callNumber = function(to, success, error) {
-    exec(success, error, "CordovaCall", "callNumber", [to]);
-};
-
-exports.on = function(e, f) {
-    var success = function(message) {
-      f(message);
-    };
-    var error = function() {
-    };
-    exec(success, error, "CordovaCall", "registerEvent", [e]);
-};
