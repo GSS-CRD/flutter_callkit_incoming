@@ -2,8 +2,10 @@ var exec = require('cordova/exec');
 
 exports.on = (callback) => {
   exec((results) => {
-    const { eventName, data } = results;
-    callback(eventName, data);
+    if (results) {
+      const { eventName, data } = results;
+      callback(eventName, data);
+    }
   }, () => {
     new Error('CordovaCallkitIncomingPlugin on error');
   }, "CordovaCallkitIncomingPlugin", "on", []);
