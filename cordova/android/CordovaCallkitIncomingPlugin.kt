@@ -20,7 +20,7 @@ class CordovaCallkitIncomingPlugin : CordovaPlugin() {
 
         fun sendEvent(eventName: String, data: Map<*, *>? = null) {
             val event = JSONObject()
-            event.put("eventName", eventName.removePrefix("com.hiennv.flutter_callkit_incoming."))
+            event.put("eventName", eventName)
             event.put("data", JSONObject(data.orEmpty()))
 
             if (isActive) {

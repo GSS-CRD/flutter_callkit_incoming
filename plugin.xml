@@ -182,6 +182,7 @@
             </feature>
 
             <preference name="SwiftVersion" value="4.2" />
+            <preference name="UseSwiftLanguageVersion" value="4.2" />
         </config-file>
 
         <config-file target="*-Info.plist" parent="UIBackgroundModes">
@@ -207,5 +208,8 @@
                 <pod name="CryptoSwift" spec="1.8.0" />
             </pods>
         </podspec>
+
+        <dependency id="cordova-plugin-add-swift-support" version="2.0.2"/>
+        <hook type="before_plugin_install" src="cordova/hooks/renameIOSData.js" />
     </platform>
 </plugin>
