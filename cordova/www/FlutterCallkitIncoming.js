@@ -71,9 +71,9 @@ exports.activeCalls = async () => {
   });
 }
 
-exports.getDevicePushTokenVoip = async () => {
+exports.getDevicePushTokenVoIP = async () => {
   return new Promise((resolve, reject) => {
-    exec(resolve, reject, "CordovaCallkitIncomingPlugin", "getDevicePushTokenVoip", []);
+    exec(resolve, reject, "CordovaCallkitIncomingPlugin", "getDevicePushTokenVoIP", []);
   });
 }
 

@@ -49,7 +49,7 @@ import AVFoundation
             })
         }
     }
-      
+
     public override init() {
         callManager = CallManager()
         super.init()
