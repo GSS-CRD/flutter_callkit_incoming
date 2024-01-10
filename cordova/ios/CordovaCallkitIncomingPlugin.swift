@@ -1,10 +1,11 @@
 import Foundation
 import UIKit
 import CallKit
+import PushKit
 import AVFoundation
 
 @available(iOS 10.0, *)
-@objc(CordovaCallkitIncomingPlugin) class CordovaCallkitIncomingPlugin: CDVPlugin, CXProviderDelegate {
+@objc(CordovaCallkitIncomingPlugin) class CordovaCallkitIncomingPlugin: CDVPlugin, CXProviderDelegate, PKPushRegistryDelegate {
     static let ACTION_DID_UPDATE_DEVICE_PUSH_TOKEN_VOIP = "com.hiennv.flutter_callkit_incoming.DID_UPDATE_DEVICE_PUSH_TOKEN_VOIP"
     
     static let ACTION_CALL_INCOMING = "com.hiennv.flutter_callkit_incoming.ACTION_CALL_INCOMING"
@@ -53,6 +54,11 @@ import AVFoundation
     public override init() {
         callManager = CallManager()
         super.init()
+
+        let voipRegistry = PKPushRegistry(queue: nil)
+        
+        voipRegistry.delegate = self
+        voipRegistry.desiredPushTypes = [.voIP]
     }
     
     @objc public func on(_ command: CDVInvokedUrlCommand) {
@@ -100,7 +106,8 @@ import AVFoundation
     
     @objc public func showCallkitIncoming(_ data: CallInComingData, fromPushKit: Bool) {
         self.isFromPushKit = fromPushKit
-        if(fromPushKit){
+
+        if fromPushKit {
             self.data = data
         }
         
@@ -123,7 +130,7 @@ import AVFoundation
         configurAudioSession()
         
         self.sharedProvider?.reportNewIncomingCall(with: uuid!, update: callUpdate) { error in
-            if(error == nil) {
+            if (error == nil) {
                 self.configurAudioSession()
                 let call = Call(uuid: uuid!, data: data)
                 call.handle = data.handle
@@ -150,7 +157,7 @@ import AVFoundation
     
     @objc public func startCall(_ data: CallInComingData, fromPushKit: Bool) {
         self.isFromPushKit = fromPushKit
-        if(fromPushKit){
+        if fromPushKit {
             self.data = data
         }
         initCallkitProvider(data)
@@ -160,8 +167,8 @@ import AVFoundation
     @objc public func muteCall(_ command: CDVInvokedUrlCommand) {
         self.commandDelegate.run(inBackground: {
             if let options = command.arguments.first as? [String: Any],
-               let callId = options["id"] as? String,
-               let isMuted = options["isMuted"] as? Bool {
+                let callId = options["id"] as? String,
+                let isMuted = options["isMuted"] as? Bool {
                 
                 self.muteCallInternal(callId, isMuted: isMuted)
             }
@@ -172,7 +179,7 @@ import AVFoundation
     
     @objc public func muteCallInternal(_ callId: String, isMuted: Bool) {
         guard let callId = UUID(uuidString: callId),
-              let call = self.callManager.callWithUUID(uuid: callId) else {
+                let call = self.callManager.callWithUUID(uuid: callId) else {
             return
         }
         if call.isMuted == isMuted {
@@ -185,14 +192,14 @@ import AVFoundation
     @objc public func isMuted(_ command: CDVInvokedUrlCommand) {
         self.commandDelegate.run(inBackground: {
             guard let options = command.arguments.first as? [String: Any],
-                  let callId = options["id"] as? String else {
+                    let callId = options["id"] as? String else {
                 let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: false)
                 self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
                 return
             }
             
             guard let callUUID = UUID(uuidString: callId),
-                  let call = self.callManager.callWithUUID(uuid: callUUID) else {
+                    let call = self.callManager.callWithUUID(uuid: callUUID) else {
                 let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: false)
                 self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
                 return
@@ -206,8 +213,8 @@ import AVFoundation
     @objc public func holdCall(_ command: CDVInvokedUrlCommand) {
         self.commandDelegate.run(inBackground: {
             if let options = command.arguments.first as? [String: Any],
-               let callId = options["id"] as? String,
-               let onHold = options["isOnHold"] as? Bool {
+                let callId = options["id"] as? String,
+                let onHold = options["isOnHold"] as? Bool {
                 self.holdCall(callId, onHold: onHold)
             }
             let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
@@ -217,7 +224,7 @@ import AVFoundation
     
     @objc public func holdCall(_ callId: String, onHold: Bool) {
         guard let callId = UUID(uuidString: callId),
-              let call = self.callManager.callWithUUID(uuid: callId) else {
+                let call = self.callManager.callWithUUID(uuid: callId) else {
             return
         }
         if call.isOnHold == onHold {
@@ -238,11 +245,11 @@ import AVFoundation
     
     @objc public func endCallInternal(_ data: CallInComingData) {
         var call: Call? = nil
-        if(self.isFromPushKit){
+        if self.isFromPushKit {
             call = Call(uuid: UUID(uuidString: self.data!.uuid)!, data: data)
             self.isFromPushKit = false
             self.sendEvent(CordovaCallkitIncomingPlugin.ACTION_CALL_ENDED, data.toJSON())
-        }else {
+        } else {
             call = Call(uuid: UUID(uuidString: data.uuid)!, data: data)
         }
         self.callManager.endCall(call: call!)
@@ -257,10 +264,10 @@ import AVFoundation
     
     @objc public func connectedCall(_ data: CallInComingData) {
         var call: Call? = nil
-        if(self.isFromPushKit){
+        if self.isFromPushKit {
             call = Call(uuid: UUID(uuidString: self.data!.uuid)!, data: data)
             self.isFromPushKit = false
-        }else {
+        } else {
             call = Call(uuid: UUID(uuidString: data.uuid)!, data: data)
         }
         self.callManager.connectedCall(call: call!)
@@ -389,13 +396,13 @@ import AVFoundation
     func configurAudioSession(){
         if data?.configureAudioSession != false {
             let session = AVAudioSession.sharedInstance()
-            do{
+            do {
                 try session.setCategory(AVAudioSession.Category.playAndRecord, options: [.duckOthers,.allowBluetooth])
                 try session.setMode(self.getAudioSessionMode(data?.audioSessionMode))
                 try session.setActive(data?.audioSessionActive ?? true)
                 try session.setPreferredSampleRate(data?.audioSessionPreferredSampleRate ?? 44100.0)
                 try session.setPreferredIOBufferDuration(data?.audioSessionPreferredIOBufferDuration ?? 0.005)
-            }catch{
+            } catch {
                 print(error)
             }
         }
@@ -480,7 +487,7 @@ import AVFoundation
     
     public func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
         guard let call = self.callManager.callWithUUID(uuid: action.callUUID) else {
-            if(self.answerCall == nil && self.outgoingCall == nil){
+            if (self.answerCall == nil && self.outgoingCall == nil) {
                 sendEvent(CordovaCallkitIncomingPlugin.ACTION_CALL_TIMEOUT, self.data?.toJSON())
             } else {
                 sendEvent(CordovaCallkitIncomingPlugin.ACTION_CALL_ENDED, self.data?.toJSON())
@@ -492,10 +499,10 @@ import AVFoundation
         self.callManager.removeCall(call)
         if (self.answerCall == nil && self.outgoingCall == nil) {
             sendEvent(CordovaCallkitIncomingPlugin.ACTION_CALL_DECLINE, self.data?.toJSON())
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(500)) {
                 action.fulfill()
             }
-        }else {
+        } else {
             sendEvent(CordovaCallkitIncomingPlugin.ACTION_CALL_ENDED, self.data?.toJSON())
             action.fulfill()
         }
@@ -596,5 +603,48 @@ import AVFoundation
     private func sendHoldEvent(_ id: String, _ isOnHold: Bool) {
         self.sendEvent(CordovaCallkitIncomingPlugin.ACTION_CALL_TOGGLE_HOLD, [ "id": id, "isOnHold": isOnHold ])
     }
+
+    func pushRegistry(_ registry: PKPushRegistry, didUpdate pushCredentials: PKPushCredentials, for type: PKPushType) {
+        let tokenString = pushCredentials.token.reduce("") { string, byte in
+            string + String(format: "%02x", byte)
+        }
+        NSLog("VoIP Token: \(tokenString)")
+        self.setDevicePushTokenVoIP(tokenString)
+    }
     
+    func pushRegistry(_ registry: PKPushRegistry, didReceiveIncomingPushWith payload: PKPushPayload, for type: PKPushType, completion: @escaping () -> Void) {
+        let payloadDict = payload.dictionaryPayload;
+        let isVideo = payloadDict["isVideo"] as? Bool ?? false
+
+        let data = CallInComingData(args: [
+            "id": payloadDict["callId"] as? String ?? "",
+            "nameCaller": payloadDict["name"] as? String ?? "",
+            "type": isVideo ? 1 : 0,
+            "ios": [
+                "handleType": "generic",
+                "supportsVideo": isVideo,
+                "supportsDTMF": true,
+                "supportsHolding": false,
+                "supportsGrouping": false,
+                "supportsUngrouping": false,
+                "includesCallsInRecents": true,
+                "ringtonePath": "system_ringtone_default",
+                "configureAudioSession": true,
+                "audioSessionMode": isVideo ? "videoChat" : "voiceChat",
+                "audioSessionActive": true,
+                "audioSessionPreferredSampleRate": 44100.0,
+                "audioSessionPreferredIOBufferDuration": 0.005
+            ],
+            "extra": [
+                "jid": payloadDict["jid"] as? String ?? "",
+                "isVideo": isVideo,
+            ]
+        ])
+        
+        self.showCallkitIncoming(data, fromPushKit: true)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(2000)) {
+            completion()
+        }
+    }
 }
